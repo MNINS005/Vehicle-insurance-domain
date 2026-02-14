@@ -1,97 +1,57 @@
-name: CI-CD Deploy Vehicle Insurance App
+name: Deploy Application Docker Image to EC2 instance
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
 
-# =========================================================
-# ===================== CI JOB =============================
-# Build docker image and push to ECR
-# =========================================================
 jobs:
   Continuous-Integration:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Checkout repo
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v2
 
-      # 2️⃣ Configure AWS credentials
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v2
+        uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
 
-      # 3️⃣ Login to ECR
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
-      # 4️⃣ Create ECR repo if first deployment
-      - name: Create ECR repository if not exists
-        run: |
-          aws ecr describe-repositories --repository-names ${{ secrets.ECR_REPO }} \
-          || aws ecr create-repository --repository-name ${{ secrets.ECR_REPO }}
-
-      # 5️⃣ Build and push Docker image
-      - name: Build and Push Docker image
+      - name: Build, tag, and push image to Amazon ECR
+        id: build-image
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: ${{ secrets.ECR_REPO }}
+          IMAGE_TAG: latest
         run: |
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:latest .
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
-
-# =========================================================
-# ===================== CD JOB =============================
-# Pull image on EC2 and run container
-# =========================================================
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .  
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
 
   Continuous-Deployment:
     needs: Continuous-Integration
-    runs-on: self-hosted   # EC2 runner
-
+    runs-on: self-hosted
     steps:
-      # 1️⃣ Configure AWS credentials on EC2
+      - name: Checkout
+        uses: actions/checkout@v3
+
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v2
+        uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
 
-      # 2️⃣ Login to ECR again (VERY IMPORTANT)
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
-      # 3️⃣ Debug step (optional but helpful)
-      - name: Debug ECR images
+      - name: Run Docker Image to serve users
         run: |
-          aws ecr list-images --repository-name ${{ secrets.ECR_REPO }}
-
-      # 4️⃣ Stop previous container if exists
-      - name: Stop old container
-        run: |
-          docker stop vehicle_app || true
-          docker rm vehicle_app || true
-
-      # 5️⃣ Pull latest image from ECR
-      - name: Pull latest image
-        run: |
-          docker pull ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPO }}:latest
-
-      # 6️⃣ Run container on EC2
-      - name: Run Docker container
-        run: |
-          docker run -d \
-          --name vehicle_app \
-          -p 5000:5000 \
-          -e AWS_ACCESS_KEY_ID="${{ secrets.AWS_ACCESS_KEY_ID }}" \
-          -e AWS_SECRET_ACCESS_KEY="${{ secrets.AWS_SECRET_ACCESS_KEY }}" \
-          -e AWS_DEFAULT_REGION="${{ secrets.AWS_DEFAULT_REGION }}" \
-          -e MONGODB_URL="${{ secrets.MONGODB_URL }}" \
-          ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPO }}:latest
+         docker run -d -e AWS_ACCESS_KEY_ID="${{ secrets.AWS_ACCESS_KEY_ID }}" -e AWS_SECRET_ACCESS_KEY="${{ secrets.AWS_SECRET_ACCESS_KEY }}" -e AWS_DEFAULT_REGION="${{ secrets.AWS_DEFAULT_REGION }}" -e MONGODB_URL="${{ secrets.MONGODB_URL }}" -p 5000:5000 "${{ steps.login-ecr.outputs.registry }}"/"${{ secrets.ECR_REPO }}":latest
