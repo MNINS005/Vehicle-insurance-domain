@@ -1,0 +1,50 @@
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual environments
+venv/
+env/
+.venv/
+
+# Secrets / env files
+.env
+.env.*
+
+# Git
+.git
+.gitignore
+
+# Logs
+logs/
+*.log
+
+# Local artifacts (VERY IMPORTANT)
+artifact/
+dvc.lock
+.dvc/
+.dvcignore
+
+# Notebooks / experiments
+notebook/
+.ipynb_checkpoints/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Project misc
+template.py
+demo.py
+README.md
+LICENSE
+*.egg-info
+
+# Node (if ever used)
+node_modules/
+
+# Docker files themselves
+Dockerfile
+docker-compose.yml
