@@ -1,19 +1,23 @@
-name: Deploy Application Docker Image to EC2
+name: CI-CD Deploy Vehicle Insurance App
 
 on:
   push:
     branches: [ main ]
 
+# =========================================================
+# ===================== CI JOB =============================
+# Build docker image and push to ECR
+# =========================================================
 jobs:
-
-# ================= CI =================
   Continuous-Integration:
     runs-on: ubuntu-latest
 
     steps:
+      # 1️⃣ Checkout repo
       - name: Checkout code
         uses: actions/checkout@v3
 
+      # 2️⃣ Configure AWS credentials
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
@@ -21,16 +25,18 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
 
+      # 3️⃣ Login to ECR
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
-      # create repo if not exists (important for first deploy)
+      # 4️⃣ Create ECR repo if first deployment
       - name: Create ECR repository if not exists
         run: |
           aws ecr describe-repositories --repository-names ${{ secrets.ECR_REPO }} \
           || aws ecr create-repository --repository-name ${{ secrets.ECR_REPO }}
 
+      # 5️⃣ Build and push Docker image
       - name: Build and Push Docker image
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
@@ -39,13 +45,17 @@ jobs:
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:latest .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
 
+# =========================================================
+# ===================== CD JOB =============================
+# Pull image on EC2 and run container
+# =========================================================
 
-# ================= CD =================
   Continuous-Deployment:
     needs: Continuous-Integration
-    runs-on: self-hosted   # your EC2 runner
+    runs-on: self-hosted   # EC2 runner
 
     steps:
+      # 1️⃣ Configure AWS credentials on EC2
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
@@ -53,21 +63,28 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_DEFAULT_REGION }}
 
+      # 2️⃣ Login to ECR again (VERY IMPORTANT)
       - name: Login to Amazon ECR
+        id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
-      # stop old container if exists
+      # 3️⃣ Debug step (optional but helpful)
+      - name: Debug ECR images
+        run: |
+          aws ecr list-images --repository-name ${{ secrets.ECR_REPO }}
+
+      # 4️⃣ Stop previous container if exists
       - name: Stop old container
         run: |
           docker stop vehicle_app || true
           docker rm vehicle_app || true
 
-      # pull latest image
+      # 5️⃣ Pull latest image from ECR
       - name: Pull latest image
         run: |
-          docker pull ${{ secrets.ECR_REGISTRY }}/${{ secrets.ECR_REPO }}:latest
+          docker pull ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPO }}:latest
 
-      # run container
+      # 6️⃣ Run container on EC2
       - name: Run Docker container
         run: |
           docker run -d \
@@ -77,4 +94,4 @@ jobs:
           -e AWS_SECRET_ACCESS_KEY="${{ secrets.AWS_SECRET_ACCESS_KEY }}" \
           -e AWS_DEFAULT_REGION="${{ secrets.AWS_DEFAULT_REGION }}" \
           -e MONGODB_URL="${{ secrets.MONGODB_URL }}" \
-          ${{ secrets.ECR_REGISTRY }}/${{ secrets.ECR_REPO }}:latest
+          ${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPO }}:latest
