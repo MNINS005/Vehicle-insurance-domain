@@ -35,15 +35,15 @@ async def index(request: Request):
 # =====================================================
 # TRAIN ROUTE (GET "/train")
 # =====================================================
-@app.get("/train")
-async def train_route():
-    try:
-        train_pipeline = TrainPipeline()
-        train_pipeline.run_pipeline()
-        return PlainTextResponse("Training successful!!!")
+# @app.get("/train")
+# async def train_route():
+#     try:
+#         train_pipeline = TrainPipeline()
+#         train_pipeline.run_pipeline()
+#         return PlainTextResponse("Training successful!!!")
 
-    except Exception as e:
-        return PlainTextResponse(f"Error Occurred! {str(e)}")
+#     except Exception as e:
+#         return PlainTextResponse(f"Error Occurred! {str(e)}")
 
 
 # =====================================================
