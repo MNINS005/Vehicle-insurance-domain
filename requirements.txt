@@ -16,7 +16,6 @@ botocore
 fastapi
 python-multipart
 uvicorn
-flask
 jinja2
 imblearn
 -e .

@@ -1,72 +1,118 @@
-from flask import Flask, render_template, request, Response, jsonify
+from fastapi import FastAPI, Request, Form
+from fastapi.responses import HTMLResponse, PlainTextResponse, JSONResponse
+from fastapi.templating import Jinja2Templates
+import uvicorn
+
 from src.constants import APP_HOST, APP_PORT
-from src.pipline.prediction_pipeline import VehicleData, VehicleDataClassifier
+from src.pipline.prediction_pipeline import (
+    VehicleData,
+    VehicleDataClassifier
+)
 from src.pipline.training_pipeline import TrainPipeline
 
-app = Flask(__name__)
+
+app = FastAPI()
+
+# Templates folder
+templates = Jinja2Templates(directory="templates")
 
 
 # =====================================================
-# HOME ROUTE (same as FastAPI GET "/")
+# HOME ROUTE (GET "/")
 # =====================================================
-@app.route("/", methods=["GET"])
-def index():
-    return render_template("index.html", context="Rendering")
+@app.get("/", response_class=HTMLResponse)
+async def index(request: Request):
+    return templates.TemplateResponse(
+        "index.html",
+        {
+            "request": request,
+            "context": "Rendering"
+        }
+    )
 
 
 # =====================================================
-# TRAIN ROUTE (same as FastAPI /train)
+# TRAIN ROUTE (GET "/train")
 # =====================================================
-@app.route("/train", methods=["GET"])
-def train_route():
+@app.get("/train")
+async def train_route():
     try:
         train_pipeline = TrainPipeline()
         train_pipeline.run_pipeline()
-        return Response("Training successful!!!")
+        return PlainTextResponse("Training successful!!!")
+
     except Exception as e:
-        return Response(f"Error Occurred! {e}")
+        return PlainTextResponse(f"Error Occurred! {str(e)}")
 
 
 # =====================================================
-# PREDICTION ROUTE (same as FastAPI POST "/")
+# PREDICTION ROUTE (POST "/")
 # =====================================================
-@app.route("/", methods=["POST"])
-def predict():
+@app.post("/", response_class=HTMLResponse)
+async def predict(
+    request: Request,
+    Gender: str = Form(...),
+    Age: str = Form(...),
+    Driving_License: str = Form(...),
+    Region_Code: str = Form(...),
+    Previously_Insured: str = Form(...),
+    Annual_Premium: str = Form(...),
+    Policy_Sales_Channel: str = Form(...),
+    Vintage: str = Form(...),
+    Vehicle_Age_lt_1_Year: str = Form(...),
+    Vehicle_Age_gt_2_Years: str = Form(...),
+    Vehicle_Damage_Yes: str = Form(...)
+):
     try:
-        form = request.form
-
         vehicle_data = VehicleData(
-            Gender=form.get("Gender"),
-            Age=form.get("Age"),
-            Driving_License=form.get("Driving_License"),
-            Region_Code=form.get("Region_Code"),
-            Previously_Insured=form.get("Previously_Insured"),
-            Annual_Premium=form.get("Annual_Premium"),
-            Policy_Sales_Channel=form.get("Policy_Sales_Channel"),
-            Vintage=form.get("Vintage"),
-            Vehicle_Age_lt_1_Year=form.get("Vehicle_Age_lt_1_Year"),
-            Vehicle_Age_gt_2_Years=form.get("Vehicle_Age_gt_2_Years"),
-            Vehicle_Damage_Yes=form.get("Vehicle_Damage_Yes"),
+            Gender=Gender,
+            Age=Age,
+            Driving_License=Driving_License,
+            Region_Code=Region_Code,
+            Previously_Insured=Previously_Insured,
+            Annual_Premium=Annual_Premium,
+            Policy_Sales_Channel=Policy_Sales_Channel,
+            Vintage=Vintage,
+            Vehicle_Age_lt_1_Year=Vehicle_Age_lt_1_Year,
+            Vehicle_Age_gt_2_Years=Vehicle_Age_gt_2_Years,
+            Vehicle_Damage_Yes=Vehicle_Damage_Yes,
         )
 
         # Convert to DataFrame
         vehicle_df = vehicle_data.get_vehicle_input_data_frame()
 
-        # Load prediction pipeline (same as FastAPI)
+        # Load prediction pipeline
         model_predictor = VehicleDataClassifier()
 
         # Predict
         value = model_predictor.predict(dataframe=vehicle_df)[0]
         status = "Response-Yes" if value == 1 else "Response-No"
 
-        return render_template("index.html", context=status)
+        return templates.TemplateResponse(
+            "index.html",
+            {
+                "request": request,
+                "context": status
+            }
+        )
 
     except Exception as e:
-        return jsonify({"status": False, "error": str(e)})
+        return JSONResponse(
+            status_code=500,
+            content={
+                "status": False,
+                "error": str(e)
+            }
+        )
 
 
 # =====================================================
 # RUN APP
 # =====================================================
 if __name__ == "__main__":
-    app.run(host=APP_HOST, port=APP_PORT, debug=True)
+    uvicorn.run(
+        "main:app",
+        host=APP_HOST,
+        port=APP_PORT,
+        reload=True
+    )
