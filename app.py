@@ -2,6 +2,7 @@ from fastapi import FastAPI, Request, Form
 from fastapi.responses import HTMLResponse, PlainTextResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 import uvicorn
+import os
 
 from src.constants import APP_HOST, APP_PORT
 from src.pipline.prediction_pipeline import (
