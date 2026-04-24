@@ -110,9 +110,11 @@ async def predict(
 # RUN APP
 # =====================================================
 if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 10000))
+
     uvicorn.run(
         "main:app",
-        host=APP_HOST,
-        port=APP_PORT,
+        host="0.0.0.0",
+        port=port,
         reload=True
     )

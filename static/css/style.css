@@ -2,94 +2,112 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: Arial, Helvetica, sans-serif;
 }
 
 body {
-    background: #f4f6f8;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
+    background: #f4f7fa;
+    padding: 40px 20px;
+    font-family: Arial, sans-serif;
 }
 
-/* Main card */
 .container {
+    max-width: 700px;
+    margin: auto;
     background: white;
     padding: 35px;
-    border-radius: 12px;
-    width: 420px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    border-radius: 16px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
 }
 
-/* Title */
 h1 {
     text-align: center;
-    margin-bottom: 25px;
+    margin-bottom: 30px;
+    color: #222;
+}
+
+details {
+    margin-bottom: 18px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 12px 18px;
+    background: #fafafa;
+    transition: 0.3s;
+}
+
+details:hover {
+    border-color: #999;
+}
+
+summary {
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    outline: none;
     color: #333;
 }
 
-/* Labels */
+.field-content {
+    margin-top: 15px;
+}
+
 label {
     display: block;
-    margin-top: 12px;
-    margin-bottom: 4px;
-    font-weight: bold;
+    margin-bottom: 8px;
     color: #555;
+    font-size: 14px;
 }
 
-/* Inputs */
-input {
+input,
+select {
     width: 100%;
-    padding: 8px 10px;
-    border-radius: 6px;
+    padding: 12px;
     border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 15px;
     outline: none;
-    transition: 0.2s;
 }
 
-input:focus {
-    border-color: #007BFF;
-    box-shadow: 0 0 5px rgba(0,123,255,0.3);
+input:focus,
+select:focus {
+    border-color: #444;
 }
 
-/* Buttons */
 button {
     width: 100%;
-    margin-top: 18px;
-    padding: 10px;
+    padding: 14px;
     border: none;
-    border-radius: 6px;
-    background: #007BFF;
-    color: white;
+    border-radius: 10px;
     font-size: 16px;
+    font-weight: 600;
     cursor: pointer;
-    transition: 0.2s;
-}
-
-button:hover {
-    background: #0056b3;
-}
-
-/* Train button different color */
-.train-button {
-    background: #28a745;
-}
-
-.train-button:hover {
-    background: #1e7e34;
-}
-
-/* Result box */
-.result {
     margin-top: 20px;
-    padding: 15px;
-    border-radius: 8px;
-    background: #f1f9ff;
-    border-left: 5px solid #007BFF;
-    text-align: center;
 }
 
-.result h2 {
-    color: #007BFF;
+.predict-btn {
+    background: #111;
+    color: white;
+}
+
+.predict-btn:hover {
+    background: #333;
+}
+
+.train-btn {
+    background: #e9ecef;
+    color: #111;
+}
+
+.train-btn:hover {
+    background: #dfe3e6;
+}
+
+.result {
+    margin-top: 30px;
+    padding: 18px;
+    border-radius: 10px;
+    background: #f1f8ff;
+    text-align: center;
+    font-size: 18px;
+    font-weight: 600;
+    color: #0d47a1;
 }

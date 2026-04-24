@@ -1,70 +1,145 @@
-<link rel="stylesheet" href="/static/css/style.css">
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vehicle Insurance Prediction</title>
+    <link rel="stylesheet" href="/static/css/style.css">
 </head>
 
 <body>
-    <center>
-        <h1>Vehicle Insurance Prediction</h1>
 
-        <!-- ================= Prediction Form ================= -->
-        <form method="post" action="/">
+<div class="container">
 
-            <p>Gender (1 = Male, 0 = Female)</p>
-            <input type="number" name="Gender" min="0" max="1" required>
+    <h1>Vehicle Insurance Prediction</h1>
 
-            <p>Age</p>
-            <input type="number" name="Age" required>
+    <form method="post" action="/">
 
-            <p>Driving License (1 = Yes, 0 = No)</p>
-            <input type="number" name="Driving_License" min="0" max="1" required>
+        <details>
+            <summary>Gender</summary>
+            <div class="field-content">
+                <label>1 = Male, 0 = Female</label>
+                <select name="Gender" required>
+                    <option value="">Select</option>
+                    <option value="1">Male</option>
+                    <option value="0">Female</option>
+                </select>
+            </div>
+        </details>
 
-            <p>Region Code</p>
-            <input type="number" step="0.01" name="Region_Code" required>
+        <details>
+            <summary>Age</summary>
+            <div class="field-content">
+                <input type="number" name="Age" required>
+            </div>
+        </details>
 
-            <p>Previously Insured (1 = Yes, 0 = No)</p>
-            <input type="number" name="Previously_Insured" min="0" max="1" required>
+        <details>
+            <summary>Driving License</summary>
+            <div class="field-content">
+                <label>1 = Yes, 0 = No</label>
+                <select name="Driving_License" required>
+                    <option value="">Select</option>
+                    <option value="1">Yes</option>
+                    <option value="0">No</option>
+                </select>
+            </div>
+        </details>
 
-            <p>Annual Premium</p>
-            <input type="number" step="0.01" name="Annual_Premium" required>
+        <details>
+            <summary>Region Code</summary>
+            <div class="field-content">
+                <input type="number" step="0.01" name="Region_Code" required>
+            </div>
+        </details>
 
-            <p>Policy Sales Channel</p>
-            <input type="number" step="0.01" name="Policy_Sales_Channel" required>
+        <details>
+            <summary>Previously Insured</summary>
+            <div class="field-content">
+                <label>1 = Yes, 0 = No</label>
+                <select name="Previously_Insured" required>
+                    <option value="">Select</option>
+                    <option value="1">Yes</option>
+                    <option value="0">No</option>
+                </select>
+            </div>
+        </details>
 
-            <p>Vintage</p>
-            <input type="number" name="Vintage" required>
+        <details>
+            <summary>Annual Premium</summary>
+            <div class="field-content">
+                <input type="number" step="0.01" name="Annual_Premium" required>
+            </div>
+        </details>
 
-            <p>Vehicle Age < 1 Year (1 = Yes, 0 = No)</p>
-            <input type="number" name="Vehicle_Age_lt_1_Year" min="0" max="1" required>
+        <details>
+            <summary>Policy Sales Channel</summary>
+            <div class="field-content">
+                <input type="number" step="0.01" name="Policy_Sales_Channel" required>
+            </div>
+        </details>
 
-            <p>Vehicle Age > 2 Years (1 = Yes, 0 = No)</p>
-            <input type="number" name="Vehicle_Age_gt_2_Years" min="0" max="1" required>
+        <details>
+            <summary>Vintage</summary>
+            <div class="field-content">
+                <input type="number" name="Vintage" required>
+            </div>
+        </details>
 
-            <p>Vehicle Damage (1 = Yes, 0 = No)</p>
-            <input type="number" name="Vehicle_Damage_Yes" min="0" max="1" required>
+        <details>
+            <summary>Vehicle Age &lt; 1 Year</summary>
+            <div class="field-content">
+                <label>1 = Yes, 0 = No</label>
+                <select name="Vehicle_Age_lt_1_Year" required>
+                    <option value="">Select</option>
+                    <option value="1">Yes</option>
+                    <option value="0">No</option>
+                </select>
+            </div>
+        </details>
 
-            <br><br>
-            <button type="submit">Predict</button>
-        </form>
+        <details>
+            <summary>Vehicle Age &gt; 2 Years</summary>
+            <div class="field-content">
+                <label>1 = Yes, 0 = No</label>
+                <select name="Vehicle_Age_gt_2_Years" required>
+                    <option value="">Select</option>
+                    <option value="1">Yes</option>
+                    <option value="0">No</option>
+                </select>
+            </div>
+        </details>
 
-        <br><br>
+        <details>
+            <summary>Vehicle Damage</summary>
+            <div class="field-content">
+                <label>1 = Yes, 0 = No</label>
+                <select name="Vehicle_Damage_Yes" required>
+                    <option value="">Select</option>
+                    <option value="1">Yes</option>
+                    <option value="0">No</option>
+                </select>
+            </div>
+        </details>
 
-        <!-- Train Button -->
-        <form method="get" action="/train">
-            <button type="submit">Train Model</button>
-        </form>
+        <button type="submit" class="predict-btn">
+            Predict Insurance Response
+        </button>
+    </form>
 
-        <br>
+    <form method="get" action="/train">
+        <button type="submit" class="train-btn">
+            Train Model
+        </button>
+    </form>
 
-        <!-- Prediction Result -->
-        {% if context != "Rendering" %}
-            <h2>Prediction: {{ context }}</h2>
-        {% endif %}
-    </center>
+    {% if context != "Rendering" %}
+        <div class="result">
+            Prediction: {{ context }}
+        </div>
+    {% endif %}
+
+</div>
+
 </body>
 </html>
